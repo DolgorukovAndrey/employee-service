@@ -20,28 +20,32 @@ public class CareerService {
     }
 
     public void create(Career career) {
+        if (career == null) {
+            throw new RuntimeException("Пустая запись не может быть создана");
+        }
         career.setStartDate(LocalDate.now());
         career.setEndDate(null);
         careerRepository.save(career);
     }
 
     public void saveCareer(Career career){
+        if (career == null) {
+            throw new RuntimeException("Пустая запись не может быть создана");
+        }
         careerRepository.save(career);
     }
 
     public void update(Career newCareer) {
+        if (newCareer == null) {
+            throw new RuntimeException("Пустая запись не может быть создана");
+        }
         Integer employeeId = newCareer.getEmployeeId();
-
         Career current = careerRepository.findActualByEmployeeId(employeeId);
-
         if (current != null) {
             current.setEndDate(LocalDate.now());
             careerRepository.save(current);
         }
-
-        newCareer.setStartDate(LocalDate.now());
-        newCareer.setEndDate(null);
-        careerRepository.save(newCareer);
+        create(newCareer);
     }
 
     public Career getActualCareer(Integer employeeId){
@@ -51,5 +55,10 @@ public class CareerService {
 
     public List<Career> getAllActualCareer(){
         return careerRepository.findAllActual();
+    }
+
+    public List<Career> findByFilters(Integer employeeId, String post, String department,
+                                      Integer salary, LocalDate startDate, LocalDate endDate) {
+        return careerRepository.findByFilters(employeeId, post, department, salary, startDate, endDate);
     }
 }

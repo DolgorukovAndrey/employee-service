@@ -2,8 +2,10 @@ package Main.controller;
 
 import Main.entity.Career;
 import Main.service.CareerService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,5 +36,16 @@ public class CareerController {
     @PutMapping
     public void update(@RequestBody Career career) {
         service.update(career);
+    }
+
+    @GetMapping("/filter")
+    public List<Career> filter(
+            @RequestParam(required = false) Integer employeeId,
+            @RequestParam(required = false) String post,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Integer salary,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return service.findByFilters(employeeId, post, department, salary, startDate, endDate);
     }
 }

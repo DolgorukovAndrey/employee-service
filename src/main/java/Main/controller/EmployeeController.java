@@ -3,6 +3,7 @@ package Main.controller;
 import Main.entity.Employee;
 import Main.fullEmpCar.FullEmpCar;
 import Main.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,12 +57,35 @@ public class EmployeeController {
             @RequestParam(required = false) String mail,
             @RequestParam(required = false) String address,
             @RequestParam(required = false) String workStatus) {
-        return service.filtersEmployee(employeeId, fullName, birthDate, passport, snils,
+        return service.findByFilters(employeeId, fullName, birthDate, passport, snils,
                 inn, phoneNumber, mail, address, workStatus);
     }
 
+    @GetMapping("/full-info/filter")
+    public List<FullEmpCar> filterFull(
+            @RequestParam(required = false) Integer employeeId,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate birthDate,
+            @RequestParam(required = false) String passport,
+            @RequestParam(required = false) String snils,
+            @RequestParam(required = false) String inn,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) String mail,
+            @RequestParam(required = false) String address,
+            @RequestParam(required = false) String workStatus,
+            @RequestParam(required = false) String reasonDismissal,
+            @RequestParam(required = false) String post,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Integer salary,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
+
+        return service.filterFullInfo(employeeId, fullName, birthDate, passport,
+                snils, inn, phoneNumber, mail, address, workStatus, reasonDismissal,
+                post, department, salary, startDate);
+    }
+
     @PostMapping("/new")
-    public void createFull(@RequestBody FullEmpCar fullEmpCar) {
+    public void createFull(@Valid @RequestBody FullEmpCar fullEmpCar) {
         service.createFull(fullEmpCar);
     }
 
@@ -70,4 +94,13 @@ public class EmployeeController {
         service.endCareer(employeeId, reasonDismissal);
     }
 
+    @GetMapping("/activeId")
+    public List<Integer> getActiveId() {
+        return service.getActiveEmployeeId();
+    }
+
+    @GetMapping("/full-info")
+    public List<FullEmpCar> getFullInfo() {
+        return service.getAllFullInfo();
+    }
 }

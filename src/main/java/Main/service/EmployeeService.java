@@ -28,19 +28,60 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
-    public void saveEmployee(Employee employee) {
-        employeeRepository.save(employee);
-    }
-
-    public void deleteEmployeeRecord(Long id) {
-        employeeRepository.deleteById(id);
+    public List<Employee> getAllActualEmployee(){
+        return employeeRepository.findAllActual();
     }
 
     public Employee getActualEmployee(Integer employeeId){
         return employeeRepository.findActualByEmployeeId(employeeId);
     }
 
-    public List<Employee> filtersEmployee(Integer employeeId,
+    public List<Integer> getActiveEmployeeId() {
+        return employeeRepository.findActiveEmployeeId();
+    }
+
+    public List<FullEmpCar> getAllFullInfo() {
+        return employeeRepository.findAllActualWithCareerObjects();
+    }
+
+    public void saveEmployee(Employee employee) {
+        employee.setAddDate(LocalDateTime.now());
+        employeeRepository.save(employee);
+    }
+
+    public void createFull(FullEmpCar fullEmpCar) {
+        Employee employee = fullEmpCar.getEmployee();
+        Career career = fullEmpCar.getCareer();
+        Integer maxId = employeeRepository.findMaxEmployeeId();
+        int nextId = (maxId == null) ? 1 : maxId + 1;
+        employee.setEmployeeId(nextId);
+        employee.setWorkStatus("Трудоустроен");
+        saveEmployee(employee);
+        career.setEmployeeId(nextId);
+        careerService.create(career);
+    }
+
+    public void deleteEmployeeRecord(Long id) {
+        employeeRepository.deleteById(id);
+    }
+
+    public void endCareer(Integer employeeId, String reasonDismissal){
+        Career currentCareer = careerService.getActualCareer(employeeId);
+        Employee currentEmployee = employeeRepository.findActualByEmployeeId(employeeId);
+        if (currentCareer == null) {
+            throw new RuntimeException("Карьера не найдена");
+        }
+        if (currentEmployee == null) {
+            throw new RuntimeException("Сотрудник не найден");
+        }
+        currentEmployee.setReasonDismissal(reasonDismissal);
+        currentEmployee.setWorkStatus("Уволен");
+        currentCareer.setEndDate(LocalDate.now());
+        careerService.saveCareer(currentCareer);
+        employeeRepository.save(currentEmployee);
+    }
+
+    public List<Employee> findByFilters(Integer employeeId,
                                           String fullName,
                                           LocalDate birthDate,
                                           String passport,
@@ -54,35 +95,14 @@ public class EmployeeService {
                 passport, snils, inn, phoneNumber, mail, address, workStatus);
     }
 
-    public List<Employee> getAllActualEmployee(){
-        return employeeRepository.findAllActual();
-    }
+    public List<FullEmpCar> filterFullInfo(
+            Integer employeeId, String fullName, LocalDate birthDate, String passport,
+            String snils, String inn, String phoneNumber, String mail, String address,
+            String workStatus, String reasonDismissal, String post, String department,
+            Integer salary, LocalDate startDate) {
 
-    public void createFull(FullEmpCar fullEmpCar) {
-        Employee employee = fullEmpCar.getEmployee();
-        Career career = fullEmpCar.getCareer();
-        Integer maxId = employeeRepository.findMaxEmployeeId();
-        int nextId = (maxId == null) ? 1 : maxId + 1;
-        employee.setEmployeeId(nextId);
-        employee.setWorkStatus("Трудоустроен");
-        employee.setAddDate(LocalDateTime.now());
-
-        Employee saved = employeeRepository.save(employee);
-
-        career.setEmployeeId(nextId);
-        careerService.create(career);
-    }
-
-    public void endCareer(Integer employeeId, String reasonDismissal){
-        Career currentCareer = careerService.getActualCareer(employeeId);
-        Employee currentEmployee = employeeRepository.findActualByEmployeeId(employeeId);
-        if (currentCareer == null) {
-            throw new RuntimeException("Карьера не найдена");
-        }
-        currentEmployee.setReasonDismissal(reasonDismissal);
-        currentEmployee.setWorkStatus("Уволен");
-        currentCareer.setEndDate(LocalDate.now());
-        careerService.saveCareer(currentCareer);
-        employeeRepository.save(currentEmployee);
+        return employeeRepository.findByFullFilters(employeeId, fullName, birthDate, passport,
+                snils, inn, phoneNumber, mail, address, workStatus, reasonDismissal,
+                post, department, salary, startDate);
     }
 }
